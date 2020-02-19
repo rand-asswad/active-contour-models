@@ -1,0 +1,43 @@
+---
+title: "Active Contours using Level Sets"
+lang: fr-FR
+bibliography: ref.bib
+biblio-style: "apalike"
+link-citations: true
+date: 2 mars 2020
+---
+```{r setup, include=FALSE}
+library(knitr)
+
+# set directory
+proj <- normalizePath('..')
+opts_knit$set(root.dir = proj)
+
+# set chunk options
+opts_chunk$set(fig.pos = 'H')
+opts_chunk$set(comment = NA)
+
+# set reticulate options
+venv <- paste(proj, "venv", sep="/")
+reticulate::use_virtualenv(venv, required = TRUE)
+```
+
+```{r child='include/math.tex'}
+```
+
+```{python, include=FALSE}
+from __future__ import division
+
+import numpy as np
+import scipy as scp
+import pylab as pyl
+import matplotlib.pyplot as plt
+
+from nt_toolbox.general import *
+from nt_toolbox.signal import *
+
+import warnings
+warnings.filterwarnings('ignore')
+```
+
+\pagebreak
