@@ -34,7 +34,6 @@ make html
 
 ```
 docs/
-├── demo/           # JS Prolog Interface
 ├── img/            # Image dir
 ├── include/        # TeX and HTML options
 ├── parts/          # Markdown content

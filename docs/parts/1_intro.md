@@ -93,8 +93,7 @@ g = grad(f0, order=2)
 d0 = np.sqrt(np.sum(g**2, 2))
 a = 5
 from nt_toolbox.perform_blurring import *
-#d = perform_blurring(d0, np.asarray([a]),bound="per")
-d = d0
+d = perform_blurring(d0, np.asarray([a]),bound="per")
 epsilon = 1e-1
 W = 1./(epsilon + d)
 W = rescale(-d, 0.1, 1)
