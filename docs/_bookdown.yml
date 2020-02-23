@@ -1,4 +1,4 @@
 book_filename: index.rmd
 site: "bookdown::bookdown_site"
-rmd_files: ["main.rmd", "parts/1_intro.md"]
+rmd_files: ["main.rmd", "parts/1_intro.md", "parts/5_conclusion.md"]
 delete_merged_file: true

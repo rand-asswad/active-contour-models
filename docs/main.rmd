@@ -1,10 +1,10 @@
 ---
-title: "Active Contours using Level Sets"
-lang: fr-FR
+title: "Active Contour Models"
+lang: en-US
 bibliography: ref.bib
 biblio-style: "apalike"
 link-citations: true
-date: 2 mars 2020
+date: 2 March 2020
 ---
 ```{r setup, include=FALSE}
 library(knitr)
