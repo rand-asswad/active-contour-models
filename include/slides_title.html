@@ -1,0 +1,23 @@
+<script>
+    let titleSlide = document.querySelector("div.slides section");
+    titleSlide.id = "title-slide";
+
+    let title = titleSlide.querySelector(".title");
+    let subtitle = titleSlide.querySelector(".subtitle");
+    titleSlide.innerHTML = `
+    <img src="img/logo.png" width="50%">
+    <h3 class="institute">Département Génie Mathématique</h3>
+    <h1 class="title">${title.innerHTML}</h1>
+    <h3 class="subtitle">${subtitle.innerHTML}</h3>
+    <div>
+        <p class="author" style="float:left;">
+            Rand ASSWAD</br>
+            Quentin LOISEAU
+        </p>
+        <p class="author" style="float:right;">
+            <em>A l'attentien de:</em></br>
+            M. Habib ABDULRAB
+        </p>
+    </div>
+    `;
+</script>
