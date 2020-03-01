@@ -88,8 +88,6 @@ Let's show the curve moved in the normal direction $\ga_1(t) \pm \Delta n_{\ga_1
 ```{python}
 delta = .03
 dn = delta * normal(gamma1)
-gamma2 = gamma1 + delta * normal(gamma1)
-gamma3 = gamma1 - delta * normal(gamma1)
 cplot(gamma1, 'k')
 cplot(gamma1 + dn, 'r--')
 cplot(gamma1 - dn, 'b--')
@@ -189,23 +187,32 @@ $$W(x) = \sqrt{g(x,x)} \geq 0$$
 
 Let's implement a random synthetic weight $W(x)$.
 ```{python}
+# import math constants
+from numpy import pi
+tau = pi * 2
+
+# image dimensions
 n = 200
 nbumps = 40
-theta = np.random.rand(nbumps,1)*2*np.pi
-r = .6*n/2
+r = 0.6 * n / 2
+
+# generate random weight
+theta = tau * np.random.rand(nbumps,1)
 a = np.array([.62*n,.6*n])
-x = np.around(a[0] + r*np.cos(theta))
-y = np.around(a[1] + r*np.sin(theta))
+x = np.around(a[0] + r * np.cos(theta))
+y = np.around(a[1] + r * np.sin(theta))
 W = np.zeros([n,n])
 for i in np.arange(0,nbumps):
     W[int(x[i]), int(y[i])] = 1
 W = gaussian_blur(W, 6.0)
 W = rescale(-np.minimum(W, .05), .3,1)
+
+# plot resulting image
 imageplot(W)
 plt.show()
 ```
 
-Calculate the gradient of the metric.
+Now that we have our can calculate its gradient.
 
 ```{python}
 # calculate gradient
@@ -224,28 +231,30 @@ EvalW = lambda W, gamma: bilinear_interpolate(W, gamma.imag, gamma.real)
 EvalG = lambda G, gamma: bilinear_interpolate(G, gamma.imag, gamma.real)
 ```
 
-In this part we will work with circular shapes, let's define a few constants
-for simple access.
-
-```{python}
-PI = np.pi
-TAU = 2 * PI
-PI_2 = 0.5 * PI
-```
-
 Now let's test the method by creating a circular curve.
 
 ```{python}
 r = .98 * n/2   # radius
 p = 128         # number of curve segments
-i_theta = np.linspace(0, TAU * 1j, p, endpoint=False)
+i_theta = np.linspace(0, 2j * pi, p, endpoint=False)
 im_center = (1 + 1j) * (n / 2)
 gamma0 = im_center + r * np.exp(i_theta)
 ```
 
+Let's define the dot product for complex vectors.
 ```{python}
 dotp = lambda a, b: a.real * b.real + a.imag * b.imag
 ```
+
+In order to implement a generic geodesic active contour,
+we should consider the case of open curves.
+
+The evolution of open curves can be performed by imposing
+boundary conditions.
+$$\begin{cases}\ga(0) = x_0\\\ga(1) = x_1\end{cases}$$
+
+The algorithm finds therefore the minimal geodesic distance
+between the two endpoints.
 
 ```{python}
 def geodesic_active_contour(gamma, W, f, p, dt, Tmax, n_plot, periodic=True, endpts=None):
@@ -264,53 +273,47 @@ def geodesic_active_contour(gamma, W, f, p, dt, Tmax, n_plot, periodic=True, end
         gamma_step = EvalW(W, gamma) * curve_step(gamma) - dotp(EvalG(G, gamma), N) * N
         gamma += dt * gamma_step                # evolve curve
         gamma = resample(gamma, p, periodic)    # resample curve
-        if i == plot_iter:
+        # impose endpoints on open curves
+        if not periodic and endpts is not None:
+            gamma[0], gamma[-1] = endpts
+        if i in [plot_iter, niter]:
             lw = 4 if i in [0, niter] else 1
             cplot(gamma, 'r', lw)               # plot curve
             plot_iter += plot_interval          # increment plots
-            if not periodic and endpts is not None:
-                gamma[0], gamma[-1] = endpts
+            if not periodic:
+                # plot endpoints
                 _ = plt.plot(gamma[0].real,  gamma[0].imag, 'b.', markersize=20)
                 _ = plt.plot(gamma[-1].real, gamma[-1].imag, 'b.', markersize=20)
     plt.show()
 
+# test the method on the random weights
 geodesic_active_contour(gamma0, W, W, p=128, dt=1, Tmax=5000, n_plot=10)
-```
-
-```{python}
-## initialize method
-#dt = 1                      # time step
-#Tmax = 5000                 # stop time
-#niter = round(Tmax / dt)    # number of iterations
-#nplot = 10                  # number of plots
-#plot_interval = round(niter / nplot)
-#
-#gamma = gamma0              # initial curve
-#plot_iter = 0               # plot iterator
-#imageplot(W.T);
-#for i in range(niter + 1):
-#    N = normal(gamma)
-#    gamma_step = EvalW(gamma) * curve_step(gamma) - dotp(EvalG(gamma), N) * N
-#    gamma += dt * gamma_step            # evolve curve
-#    gamma = resample(gamma, p=128)      # resample curve
-#    if i == plot_iter:
-#        lw = 4 if i in [0, niter] else 1
-#        cplot(gamma, 'r', lw)           # plot curve
-#        plot_iter += plot_interval      # increment plots
-#plt.show()
 ```
 
 ## Medical Image Segmentation
 
+Let's now test the defined method
+to detect edges in a medical image.
+
+We first load the image as $f:[0,1]^2\rightarrow \C$,
+where the domain of $f$ is approximated by the discrete space $\sset{0,\ldots,n-1}^2$.
+
 ```{python}
-n = 256
 name = 'nt_toolbox/data/cortex.bmp'
+n = 256
 f = load_image(name, n)
 imageplot(f)
 plt.show()
 ```
 
+We define the weight as the decreasing function of the gradient magnitude.
+
+$$ W(x) = \psi(d\star h_a(x)) \qtext{where}
+d(x) = \norm{\nabla f(x)} $$
+where $h_a$ is a blurring kernel of width $a>0$ implemented with the help of the library `nt_toolbox`.
+
 ```{python}
+# calculate gradient magnitude
 G = grad(f)
 d0 = np.sqrt(np.sum(G**2, 2))
 imageplot(d0)
@@ -318,6 +321,7 @@ plt.show()
 ```
 
 ```{python}
+# apply gaussian blur
 a = 2
 d = gaussian_blur(d0, a)
 imageplot(d)
@@ -325,57 +329,44 @@ plt.show()
 ```
 
 ```{python}
+# calculate W as decreasing function of d
 d = np.minimum(d, .4)
 W = rescale(-d, .8, 1)
 imageplot(W)
 plt.show()
 ```
 
+Now that we have our geodesic metric we can apply the method as before.
+
+First let's take a look at our initial curve.
+
 ```{python}
-r = .95*n/2
-p = 128 # number of points on the curve
-theta = np.transpose( np.linspace(0, 2*np.pi, p + 1) )
-theta = theta[0:-1]
-gamma0 = n/2*(1+1j) +  r*(np.cos(theta) + 1j*np.sin(theta))
-gamma = gamma0
-imageplot(np.transpose(f))
-cplot(gamma, 'r', 2)
+r = .95 * n / 2
+p = 128
+i_theta = np.linspace(0, 2j * pi, p, endpoint=False)
+im_center = (1 + 1j) * (n / 2)
+gamma0 = im_center + r * np.exp(i_theta)
+imageplot(f.T)
+cplot(gamma0, 'r', 2)
 plt.show()
 ```
 
 ```{python}
-#dt = 2
-#Tmax = 9000
-#niter = round(Tmax / dt)
-#
-#G = grad(W);
-#G = G[:,:,0] + 1j*G[:,:,1]
-#gamma = gamma0
-#displist = np.around(np.linspace(0,niter,10))
-#k = 0
-#imageplot(f.T)
-#for i in np.arange(0,niter+1):
-#    n = normal(gamma)
-#    g = EvalW(gamma) * curve_step(gamma) - dotp(EvalG(gamma), n) * n
-#    gamma = resample(gamma + dt*g, p=128)
-#    if i==displist[k]:
-#        lw = 1
-#        if i==0 or i==niter:
-#            lw = 4
-#        cplot(gamma, 'r', lw);
-#        k = k+1
-#plt.show()
-geodesic_active_contour(gamma0, W, f, p=128, dt=1, Tmax=9000, n_plot=10)
+geodesic_active_contour(gamma0, W, f, p, dt=2, Tmax=9000, n_plot=10)
 ```
 
+### Evolution of an open curve
+
+Let's apply the method on an open curve in a segment of the same image.
+
 ```{python}
-n = 256
-f = load_image(name, n)
 f = f[45:105, 60:120]
 n = f.shape[0]
 imageplot(f)
 plt.show()
 ```
+
+We reapply the same steps to find the geodesic metric.
 
 ```{python}
 G = grad(f)
@@ -388,13 +379,20 @@ imageplot(W)
 plt.show()
 ```
 
+We define our boundary conditions.
+
 ```{python}
+# boundary conditions
 x0 = 4 + 55j
 x1 = 53 + 4j
+
+# initial curve as straight segment
 p = 128
-t = np.linspace(0, 1, p).T
+t = np.linspace(0, 1, p)
 gamma0 = t*x1 + (1-t)*x0
 gamma = gamma0
+
+# plot metric
 imageplot(W.T)
 cplot(gamma,'r', 2)
 _ = plt.plot(gamma[0].real, gamma[0].imag, 'b.', markersize=20)
@@ -402,37 +400,10 @@ _ = plt.plot(gamma[-1].real, gamma[-1].imag, 'b.', markersize=20)
 plt.show()
 ```
 
-```{python}
-dt = 1 / 10
-Tmax = 2000*4/ 7
-niter = round(Tmax/ dt)
-
-```
+Now that we have our initial curve, geodesic metric and boundary conditions
+we can perform the geodesic active contour method.
 
 ```{python}
-G = grad(W)
-G = G[:,:,0] + 1j*G[:,:,1]
-gamma = gamma0
-displist = np.around(np.linspace(0,niter,10))
-k = 0
-imageplot(f.T)
-for i in range(0,niter+1):
-    N = normal(gamma)
-    g = EvalW(W, gamma) * curve_step(gamma) - dotp(EvalG(G, gamma), N) * N
-    gamma = gamma + dt*g
-    gamma = resample(gamma, p=128, periodic=False)
-    # impose start/end point
-    gamma[0] = x0
-    gamma[-1] = x1
-    if i==displist[k]:   
-        lw = 1
-        if i==0 or i==niter:
-            lw = 4
-        cplot(gamma, 'r', lw);
-        k = k+1
-        _ = plt.plot(gamma[0].real,  gamma[0].imag, 'b.', markersize=20)
-        _ = plt.plot(gamma[-1].real, gamma[-1].imag, 'b.', markersize=20)
-plt.show()
-#geodesic_active_contour(gamma0, W, f, p=128, dt=0.1, Tmax=8000/7, n_plot=10,
-#    periodic=False, endpts=(x0, x1))
+geodesic_active_contour(gamma0, W, f, p=128, dt=0.1, Tmax=8000/7, n_plot=10,
+    periodic=False, endpts=(x0, x1))
 ```
