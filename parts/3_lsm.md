@@ -240,6 +240,7 @@ Let's calculate first the blurred gradient magnitude.
 ```{python}
 # load image of size n×n
 f0 = rescale(load_image("nt_toolbox/data/cortex.bmp", n))
+start = time()
 
 # compute the magnitude of the gradient
 g = grad(f0, order=2)
@@ -249,6 +250,8 @@ d0 = np.sqrt(np.sum(g**2, 2))
 from nt_toolbox.perform_blurring import *
 a = 5
 d = perform_blurring(d0, np.asarray([a]), bound="per")
+
+lsm_time = time() - start
 ```
 
 The decreasing function $\psi$ can be defined
@@ -258,10 +261,12 @@ can adjust the overall values of $W$ as needed without having
 to adjust the parameters $\alpha$ and $\beta$.
 
 ```{python}
+start = time()
 # calculate weight
 epsilon = 1e-1
 W = 1./(epsilon + d)
 W = rescale(-d, 0.1, 1)
+lsm_time += time() - start
 
 # display
 _ = plt.figure(figsize=(10,5))
@@ -293,6 +298,8 @@ $$\frac{\diff}{\ds} \phi_s = \mathrm{div}\pp{W\frac{\nabla\phi_s}{\norm{\nabla\p
 Let's apply the method on our initial square zero isoline.
 
 ```{python}
+start = time()
+
 dt = 0.4                    # time step
 Tmax = 1500                 # stop time
 niter = round(Tmax / dt)    # number of iterations
@@ -333,6 +340,8 @@ for i in range(niter + 1):
         plot_iter += plot_interval
 
 plt.show()
+lsm_time += time() - start
+print(f"Time elapsed:\t{lsm_time} seconds")
 ```
 
 ## Region-based Chan-Vese segmentation
@@ -386,6 +395,8 @@ Now that we have our evolution equation well-defined
 we can apply our gradient descent method.
 
 ```{python}
+start = time()
+
 dt = 0.5                    # time step
 Tmax = 100                  # stop time
 niter = round(Tmax / dt)    # number of iterations
@@ -430,4 +441,6 @@ for i in range(niter + 1):
         plot_iter += plot_interval
 
 plt.show()
+cv_time = time() - start
+print(f"Time elapsed:\t{cv_time} seconds")
 ```

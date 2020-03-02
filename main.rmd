@@ -16,7 +16,7 @@ opts_knit$set(root.dir = proj)
 # set chunk options
 opts_chunk$set(fig.pos = 'H')
 opts_chunk$set(comment = NA)
-opts_chunk$set(cache = TRUE)
+#opts_chunk$set(cache = TRUE)
 
 # set reticulate options
 venv <- paste(proj, "venv", sep="/")

@@ -318,25 +318,40 @@ d(x) = \norm{\nabla f(x)} $$
 where $h_a$ is a blurring kernel of width $a>0$ implemented with the help of the library `nt_toolbox`.
 
 ```{python}
+# initialize timer variables
+from time import time
+start = time()
+
 # calculate gradient magnitude
 G = grad(f)
 d0 = np.sqrt(np.sum(G**2, 2))
+param_time = time() - start
+
+# display
 imageplot(d0)
 plt.show()
 ```
 
 ```{python}
+start = time()
 # apply gaussian blur
 a = 2
 d = gaussian_blur(d0, a)
+param_time += time() - start
+
+# display
 imageplot(d)
 plt.show()
 ```
 
 ```{python}
+start = time()
 # calculate W as decreasing function of d
 d = np.minimum(d, .4)
 W = rescale(-d, .8, 1)
+param_time += time() - start
+
+# display
 imageplot(W)
 plt.show()
 ```
@@ -357,7 +372,10 @@ plt.show()
 ```
 
 ```{python}
+start = time()
 geodesic_active_contour(gamma0, W, f, p, dt=2, Tmax=9000, n_plot=10)
+param_time += time() - start
+print(f"Time elapsed:\t{param_time} seconds")
 ```
 
 ### Evolution of an open curve

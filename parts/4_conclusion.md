@@ -1,5 +1,17 @@
 # Conclusion
 
+Let's compare the execution time of each method
+for detecting the contour of the medical image.
+
+```{python}
+results = "Time elapsed per method (in seconds):\n"
+results += f"Parametric edge-based:\t{param_time}\n"
+results += f"Implicit edge-based:\t{lsm_time}\n"
+results += f"Implicit region-based:\t{cv_time}\n"
+
+print(results)
+```
+
 We have seen two classes of active contour methods,
 the parametric representation allows simple calculations
 of evolution functions. However, the implicit representation
