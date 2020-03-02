@@ -107,7 +107,7 @@ Which corresponds to minizing the energy flow.
 $$ \frac{\diff}{\ds} \ga_s = -\nabla E(\ga_s) $$
 
 The numerical implementation of the method is formulated as
-$$ \ga^{(k+1)} = \ga^{(k)} - \tau_k\cdot E(\ga^{(k)}) $$
+$$\ga^{(k+1)}= \ga^{(k)} - \tau_k\cdot\nabla E(\ga^{(k)})$$
 
 In order to define our energy, we consider a smooth Riemannian manifold
 equipped with an inner product on the tangent space at each point
@@ -184,6 +184,10 @@ $$ L(\ga) = \int_0^1 W(\ga(t)) \norm{\ga'(t)} \dt $$
 Where the weight $W(\cdot)$ is the geodesic metric defined as the square root of the
 quadratic form associated to the geodesic metric tensor $g(\cdot,\cdot)$.
 $$W(x) = \sqrt{g(x,x)} \geq 0$$
+
+The speed term of the evolution equation
+is therefore defined for geodesic motion as
+$$\beta(x,n,\kappa)=W\cdot\kappa-\dotp{\nabla W}{n}$$
 
 Let's implement a random synthetic weight $W(x)$.
 ```{python}
@@ -290,12 +294,13 @@ def geodesic_active_contour(gamma, W, f, p, dt, Tmax, n_plot, periodic=True, end
 geodesic_active_contour(gamma0, W, W, p=128, dt=1, Tmax=5000, n_plot=10)
 ```
 
-## Medical Image Segmentation
+## Medical image segmentation
 
-Let's now test the defined method
-to detect edges in a medical image.
+### Evolution of a closed curve
 
-We first load the image as $f:[0,1]^2\rightarrow \C$,
+Let's now test the defined method to detect edges in a medical image.
+
+We first load the image as $f:[0,1]^2\rightarrow \R$,
 where the domain of $f$ is approximated by the discrete space $\sset{0,\ldots,n-1}^2$.
 
 ```{python}

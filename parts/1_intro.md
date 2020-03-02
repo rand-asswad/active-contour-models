@@ -54,7 +54,7 @@ In the case of a circle, we can express it implicitly by
 $$ \Gamma = \vset{(x,y)\in\R^2}{(x-x_0)^2 + (y-y_0)^2 = r} $$
 
 or explicitly
-$$ \Gamma = \vset{(x,y)\in\R^2}{y=y_0+\sqrt{r-(x-x_0)^2}\\y=y_0-\sqrt{r-(x-x_0)^2}} $$
+$$ \Gamma = \vset{(x,y)\in\R^2}{y=y_0\pm\sqrt{r-(x-x_0)^2}} $$
 
 Generally speaking, the parametric representation can be more expressive than
 cartesian equations.
@@ -65,6 +65,5 @@ function $\gamma'(t)$ is easy to calculate and study.
 In the following sections we will study active contours with respect to
 their curve representation, as described by G. Peyré [-@gpeyre].
 
-- Parametric edge-based active contours
-- Implicit edge-based active contours
-- Region-based active contours
+- Parametric active contours
+- Implicit active contours

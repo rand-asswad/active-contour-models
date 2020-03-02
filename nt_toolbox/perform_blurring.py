@@ -216,7 +216,7 @@ def perform_convolution(x,h,bound="sym"):
         n = np.asarray(n)
         p = np.asarray(p)
         d = np.floor((p-1)/2.).astype(int)
-        print(n)
+        #print(n)
         if nd == 1:
             h = np.vstack((h[d:],np.vstack((np.zeros(n-p),h[:d]))))
             y = np.real(pyl.ifft(pyl.fft(x)*pyl.fft(h)))

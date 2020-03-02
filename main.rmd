@@ -16,7 +16,7 @@ opts_knit$set(root.dir = proj)
 # set chunk options
 opts_chunk$set(fig.pos = 'H')
 opts_chunk$set(comment = NA)
-#opts_chunk$set(cache = TRUE)
+opts_chunk$set(cache = TRUE)
 
 # set reticulate options
 venv <- paste(proj, "venv", sep="/")
@@ -35,7 +35,11 @@ import pylab as pyl
 
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
+from matplotlib import rc
 rcParams['savefig.transparent'] = True
+rc('font', **{'family':'sans-serif','sans-serif':['Helvetica']})
+rc('text', usetex=True)
+
 
 from nt_toolbox.general import *
 from nt_toolbox.signal import *
